@@ -80,7 +80,11 @@ func (c wheelyService) GetRoutePredictions(target Coordinates, source []Coordina
 
 	var res []int
 
-	json.NewDecoder(resp.Body).Decode(&res)
+	err = json.NewDecoder(resp.Body).Decode(&res)
+
+	if err != nil {
+		return []int{}, err
+	}
 
 	return res, nil
 }

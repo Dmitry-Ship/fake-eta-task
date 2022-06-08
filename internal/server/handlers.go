@@ -24,5 +24,11 @@ func (s *server) handleGetEstimation(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 
-	w.Write([]byte(fmt.Sprintf("%d", estimation)))
+	_, err = w.Write([]byte(fmt.Sprintf("%d", estimation)))
+
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error: %s", err.Error()), http.StatusInternalServerError)
+		return
+	}
+
 }
