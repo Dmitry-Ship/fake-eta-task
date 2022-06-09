@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: white;
+        }
+        .form {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        button {
+            background-color: rgba(39, 169, 221, 0.784);
+            color: white;
+            border-radius: 10px;
+            font-size: medium;
+            padding: 14px 20px;
+            border: none;
+            width: 200px;
+        }
+    </style>
+
+
+</head>
+<body>
+    <script>
+        const handleGetPrediction = async () => {
+            // coordinates of Kremlin (Moscow)
+            const lat = '55.7520'
+            const lng = '37.6175'
+            const response = await fetch(`/getEstimation?lat=${lat}&lng=${lng}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            })
+
+            const data = await response.json()
+
+            document.getElementById('info').innerHTML = `The nearest 🚕 will arrive in ${data} minutes`
+        }
+    </script>
+    <div class="form">
+        <h2 id="info">🚕🚕🚕</h2>
+        <button onclick="handleGetPrediction()">Find nearest car</button>
+    </div>
+</body>
+</html>

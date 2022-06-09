@@ -16,5 +16,6 @@ func NewServer(estimationService services.EstimationService) *server {
 }
 
 func (s *server) InitRoutes() {
+	http.HandleFunc("/", s.handleIndex)
 	http.HandleFunc("/getEstimation", s.handleGetEstimation)
 }

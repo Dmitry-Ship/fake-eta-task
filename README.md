@@ -9,4 +9,4 @@
 docker-compose up --build
 ```
 
-4. Open the browser and go to http://localhost:8080
+3. Open the browser, go to http://localhost:8080 and click the button! Enjoy your ride!

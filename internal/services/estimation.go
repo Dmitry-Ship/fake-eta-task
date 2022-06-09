@@ -19,22 +19,22 @@ func NewEstimationService(wheely adapters.Wheely) *estimationService {
 }
 
 func (e estimationService) Estimate(target adapters.Coordinates) (int, error) {
-	cars, err := e.wheely.GetCars(target)
+	cars, err := e.wheely.GetCars(target, 10)
 
 	if err != nil {
 		return 0, err
 	}
 
-	source := []adapters.Coordinates{}
+	sources := []adapters.Coordinates{}
 
 	for _, car := range cars {
-		source = append(source, adapters.Coordinates{
+		sources = append(sources, adapters.Coordinates{
 			Lat: car.Coordinates.Lat,
 			Lng: car.Coordinates.Lng,
 		})
 	}
 
-	route, err := e.wheely.GetRoutePredictions(target, source)
+	route, err := e.wheely.GetRoutePredictions(target, sources)
 
 	if err != nil {
 		return 0, err

@@ -7,7 +7,7 @@ import (
 
 type wheelyMock struct{}
 
-func (w wheelyMock) GetCars(target adapters.Coordinates) ([]adapters.Car, error) {
+func (w wheelyMock) GetCars(target adapters.Coordinates, numberOfCars int) ([]adapters.Car, error) {
 	return []adapters.Car{
 		{
 			Id: 1,
@@ -55,5 +55,4 @@ func TestEstimate(t *testing.T) {
 	if estimation != 1 {
 		t.Errorf("Estimate() returned %d instead of 1", estimation)
 	}
-
 }
