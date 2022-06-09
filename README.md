@@ -1,4 +1,4 @@
-# fake-eta-task
+# fake-eta-task [![Main](https://github.com/Dmitry-Ship/fake-eta-task/actions/workflows/main.yml/badge.svg)](https://github.com/Dmitry-Ship/fake-eta-task/actions/workflows/main.yml)
 
 ## ⚡️ Quick Start
 
