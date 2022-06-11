@@ -17,8 +17,8 @@ func main() {
 	defer cancel()
 
 	cache := infra.NewCache(ctx)
-	wheely := adapters.NewWheely(cache)
-	estimationService := services.NewEstimationService(wheely)
+	wheely := adapters.NewWheely()
+	estimationService := services.NewEstimationService(wheely, cache)
 	server := server.NewServer(estimationService)
 
 	server.InitRoutes()

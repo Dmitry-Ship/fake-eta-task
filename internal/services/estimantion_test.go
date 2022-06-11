@@ -1,9 +1,22 @@
 package services
 
 import (
+	"errors"
 	"fake-eta-task/internal/adapters"
 	"testing"
+	"time"
 )
+
+type mockCache struct {
+}
+
+func (m *mockCache) Get(key string, result interface{}) error {
+	return errors.New("not cached")
+}
+
+func (m *mockCache) Set(key string, lifeTime time.Duration, value interface{}) error {
+	return nil
+}
 
 type wheelyMock struct{}
 
@@ -32,7 +45,8 @@ func (w wheelyMock) GetRoutePredictions(target adapters.Coordinates, source []ad
 
 func TestNewEstimationService(t *testing.T) {
 	wheely := wheelyMock{}
-	estimationService := NewEstimationService(wheely)
+	cache := &mockCache{}
+	estimationService := NewEstimationService(wheely, cache)
 
 	if estimationService == nil {
 		t.Error("NewEstimationService() returned nil")
@@ -41,7 +55,8 @@ func TestNewEstimationService(t *testing.T) {
 
 func TestEstimate(t *testing.T) {
 	wheely := wheelyMock{}
-	estimationService := NewEstimationService(wheely)
+	cache := &mockCache{}
+	estimationService := NewEstimationService(wheely, cache)
 
 	estimation, err := estimationService.Estimate(adapters.Coordinates{
 		Lat: 0.0,

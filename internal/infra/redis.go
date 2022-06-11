@@ -35,7 +35,7 @@ func getRedisClient(ctx context.Context) *redis.Client {
 
 type Cache interface {
 	Get(key string, result interface{}) error
-	Set(key string, value interface{}) error
+	Set(key string, lifeTime time.Duration, value interface{}) error
 }
 
 type cache struct {
@@ -55,10 +55,10 @@ func (c *cache) Get(key string, result interface{}) error {
 	return json.Unmarshal([]byte(val), result)
 }
 
-func (c *cache) Set(key string, value interface{}) error {
+func (c *cache) Set(key string, lifeTime time.Duration, value interface{}) error {
 	val, err := json.Marshal(value)
 	if err != nil {
 		return err
 	}
-	return c.client.Set(c.ctx, key, val, time.Second*10).Err()
+	return c.client.Set(c.ctx, key, val, time.Second*lifeTime).Err()
 }

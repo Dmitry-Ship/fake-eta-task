@@ -1,24 +1,11 @@
 package adapters
 
 import (
-	"errors"
 	"testing"
 )
 
-type mockCache struct {
-}
-
-func (m *mockCache) Get(key string, result interface{}) error {
-	return errors.New("not cached")
-}
-
-func (m *mockCache) Set(key string, value interface{}) error {
-	return nil
-}
-
 func TestWheely(t *testing.T) {
-	cache := &mockCache{}
-	wheely := NewWheely(cache)
+	wheely := NewWheely()
 
 	if wheely == nil {
 		t.Error("NewWheely() returned nil")
@@ -26,8 +13,7 @@ func TestWheely(t *testing.T) {
 }
 
 func TestGetCars(t *testing.T) {
-	cache := &mockCache{}
-	wheely := NewWheely(cache)
+	wheely := NewWheely()
 
 	cars, err := wheely.GetCars(Coordinates{
 		Lat: 0.0,
@@ -44,8 +30,7 @@ func TestGetCars(t *testing.T) {
 }
 
 func TestGetRoutePredictions(t *testing.T) {
-	cache := &mockCache{}
-	wheely := NewWheely(cache)
+	wheely := NewWheely()
 
 	route, err := wheely.GetRoutePredictions(Coordinates{
 		Lat: 0.0,

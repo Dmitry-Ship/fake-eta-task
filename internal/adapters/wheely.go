@@ -3,7 +3,6 @@ package adapters
 import (
 	"bytes"
 	"encoding/json"
-	"fake-eta-task/internal/infra"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
@@ -16,13 +15,10 @@ type Wheely interface {
 }
 
 type wheelyService struct {
-	cache infra.Cache
 }
 
-func NewWheely(cache infra.Cache) *wheelyService {
-	return &wheelyService{
-		cache: cache,
-	}
+func NewWheely() *wheelyService {
+	return &wheelyService{}
 }
 
 type Coordinates struct {
@@ -36,14 +32,6 @@ type Car struct {
 }
 
 func (s *wheelyService) GetCars(target Coordinates, numberOfCars int) ([]Car, error) {
-	cars := []Car{}
-	cacheKey := "wheely_cars_" + fmt.Sprintf("%f", target.Lat) + "_" + fmt.Sprintf("%f", target.Lng)
-	err := s.cache.Get(cacheKey, &cars)
-
-	if err == nil {
-		return cars, nil
-	}
-
 	resp, err := http.Get("https://dev-api.wheely.com/fake-eta/cars?lat=" + fmt.Sprintf("%f", target.Lat) + "&lng=" + fmt.Sprintf("%f", target.Lng) + "&limit=" + fmt.Sprintf("%d", numberOfCars))
 
 	if err != nil {
@@ -66,12 +54,6 @@ func (s *wheelyService) GetCars(target Coordinates, numberOfCars int) ([]Car, er
 			cars = append(cars, car)
 		}
 
-		// err := s.cache.Set(cacheKey, cars)
-
-		// if err != nil {
-		// 	return []Car{}, err
-		// }
-
 		return cars, nil
 	}
 
@@ -80,6 +62,8 @@ func (s *wheelyService) GetCars(target Coordinates, numberOfCars int) ([]Car, er
 	if err != nil {
 		return []Car{}, err
 	}
+
+	cars := []Car{}
 
 	if err := json.Unmarshal(body, &cars); err != nil {
 		return []Car{}, err
