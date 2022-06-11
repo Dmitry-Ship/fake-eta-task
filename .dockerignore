@@ -6,5 +6,6 @@ tmp
 .git
 .gitignore
 .github
+cache
 
 **/*go-bin

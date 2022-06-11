@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"fake-eta-task/internal/adapters"
+	"fake-eta-task/internal/infra"
 	"fake-eta-task/internal/server"
 	"fake-eta-task/internal/services"
 	"log"
@@ -10,7 +12,12 @@ import (
 )
 
 func main() {
-	wheely := adapters.NewWheely()
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	cache := infra.NewCache(ctx)
+	wheely := adapters.NewWheely(cache)
 	estimationService := services.NewEstimationService(wheely)
 	server := server.NewServer(estimationService)
 
