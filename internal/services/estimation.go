@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"fake-eta-task/internal/adapters"
 )
 
@@ -19,10 +20,16 @@ func NewEstimationService(wheely adapters.Wheely) *estimationService {
 }
 
 func (e estimationService) Estimate(target adapters.Coordinates) (int, error) {
-	cars, err := e.wheely.GetCars(target, 10)
+	cars, err := adapters.Retry(3, 1, func() ([]adapters.Car, error) {
+		return e.wheely.GetCars(target, 10)
+	})
 
 	if err != nil {
 		return 0, err
+	}
+
+	if len(cars) == 0 {
+		return 0, errors.New("No cars found")
 	}
 
 	sources := []adapters.Coordinates{}
@@ -34,14 +41,16 @@ func (e estimationService) Estimate(target adapters.Coordinates) (int, error) {
 		})
 	}
 
-	route, err := e.wheely.GetRoutePredictions(target, sources)
+	predictions, err := adapters.Retry(3, 1, func() ([]int, error) {
+		return e.wheely.GetRoutePredictions(target, sources)
+	})
 
 	if err != nil {
 		return 0, err
 	}
 
-	min := route[0]
-	for _, r := range route {
+	min := predictions[0]
+	for _, r := range predictions {
 		if r < min {
 			min = r
 		}
