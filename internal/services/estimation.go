@@ -2,67 +2,97 @@ package services
 
 import (
 	"errors"
-	"fake-eta-task/internal/adapters"
+	"fake-eta-task/internal/common"
+	carsClient "fake-eta-task/internal/generated/cars/client/operations"
+	carsModels "fake-eta-task/internal/generated/cars/models"
+	predictionClient "fake-eta-task/internal/generated/prediction/client/operations"
+	"fake-eta-task/internal/generated/prediction/models"
+
+	"math/rand"
+
 	"fake-eta-task/internal/infra"
 	"fmt"
 )
 
 type EstimationService interface {
-	Estimate(adapters.Coordinates) (int, error)
+	Estimate(lat, lng float64) (int64, error)
 }
 
 type estimationService struct {
-	wheely adapters.Wheely
-	cache  infra.Cache
+	carsService       carsClient.ClientService
+	predictionService predictionClient.ClientService
+	cache             infra.Cache
 }
 
-func NewEstimationService(wheely adapters.Wheely, cache infra.Cache) *estimationService {
+func NewEstimationService(carsService carsClient.ClientService, predictionService predictionClient.ClientService, cache infra.Cache) *estimationService {
 	return &estimationService{
-		wheely: wheely,
-		cache:  cache,
+		carsService:       carsService,
+		predictionService: predictionService,
+		cache:             cache,
 	}
 }
 
-func (s estimationService) Estimate(target adapters.Coordinates) (int, error) {
-	minimalTime := 0
-	cacheKey := "time_prediction_" + fmt.Sprintf("%f", target.Lat) + "_" + fmt.Sprintf("%f", target.Lng)
+func (s estimationService) Estimate(lat, lng float64) (int64, error) {
+	var minimalTime int64 = 0
+	cacheKey := "time_prediction_" + fmt.Sprintf("%f", lat) + "_" + fmt.Sprintf("%f", lng)
 	err := s.cache.Get(cacheKey, &minimalTime)
 
 	if err == nil {
 		return minimalTime, nil
 	}
 
-	cars, err := adapters.Retry(3, 1, func() ([]adapters.Car, error) {
-		return s.wheely.GetCars(target, 10)
+	carsResponse, err := common.Retry(3, 1, func() (*carsClient.GetCarsOK, error) {
+		params := carsClient.NewGetCarsParams()
+		params.SetLat(lat)
+		params.SetLng(lng)
+		params.SetLimit(10)
+
+		return s.carsService.GetCars(params)
 	})
 
+	// ⚠️🤷🏻‍♂️ Normally it would just return error, but since it is a fake service, we need to return some fake cars
 	if err != nil {
-		return 0, err
+		carsResponse = &carsClient.GetCarsOK{
+			Payload: s.generateFakeCars(lat, lng, 10),
+		}
 	}
 
-	if len(cars) == 0 {
+	if len(carsResponse.Payload) == 0 {
 		return 0, errors.New("No cars found")
 	}
 
-	sources := []adapters.Coordinates{}
+	sources := []models.Position{}
 
-	for _, car := range cars {
-		sources = append(sources, adapters.Coordinates{
-			Lat: car.Coordinates.Lat,
-			Lng: car.Coordinates.Lng,
+	for _, car := range carsResponse.Payload {
+		sources = append(sources, models.Position{
+			Lat: car.Lat,
+			Lng: car.Lng,
 		})
 	}
 
-	predictions, err := adapters.Retry(3, 1, func() ([]int, error) {
-		return s.wheely.GetRoutePredictions(target, sources)
+	predictionResponse, err := common.Retry(3, 1, func() (*predictionClient.PredictOK, error) {
+		params := predictionClient.NewPredictParams()
+		predictBody := predictionClient.PredictBody{
+			Source: sources,
+			Target: models.Position{
+				Lat: lat,
+				Lng: lng,
+			},
+		}
+		params.SetPositionList(predictBody)
+
+		return s.predictionService.Predict(params)
 	})
 
+	// ⚠️🤷🏻‍♂️ Normally it would just return error, but since it is a fake service, we need to return some fake time
 	if err != nil {
-		return 0, err
+		predictionResponse = &predictionClient.PredictOK{
+			Payload: s.generateFakePredictions(10),
+		}
 	}
 
-	min := predictions[0]
-	for _, r := range predictions {
+	min := predictionResponse.Payload[0]
+	for _, r := range predictionResponse.Payload {
 		if r < min {
 			min = r
 		}
@@ -75,4 +105,28 @@ func (s estimationService) Estimate(target adapters.Coordinates) (int, error) {
 	}
 
 	return min, nil
+}
+
+func (s estimationService) generateFakeCars(lat float64, lng float64, numberOfCars int) []carsModels.Car {
+	cars := []carsModels.Car{}
+	for i := 0; i < numberOfCars; i++ {
+		car := carsModels.Car{
+			ID:  int64(i),
+			Lat: lat + rand.Float64()/100,
+			Lng: lng + rand.Float64()/100,
+		}
+		cars = append(cars, car)
+	}
+
+	return cars
+}
+
+func (s estimationService) generateFakePredictions(numberOfSources int) []int64 {
+	predictions := []int64{}
+	for i := 0; i < numberOfSources; i++ {
+		// let's assume travel time is never longer than 30 minutes
+		predictions = append(predictions, int64(1+rand.Intn(30)))
+	}
+
+	return predictions
 }

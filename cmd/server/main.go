@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
-	"fake-eta-task/internal/adapters"
+	carsClient "fake-eta-task/internal/generated/cars/client"
+	predictionClient "fake-eta-task/internal/generated/prediction/client"
+
 	"fake-eta-task/internal/infra"
 	"fake-eta-task/internal/server"
 	"fake-eta-task/internal/services"
@@ -15,10 +17,11 @@ func main() {
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-
 	cache := infra.NewCache(ctx)
-	wheely := adapters.NewWheely()
-	estimationService := services.NewEstimationService(wheely, cache)
+
+	cars := carsClient.Default
+	prediction := predictionClient.Default
+	estimationService := services.NewEstimationService(cars.Operations, prediction.Operations, cache)
 	server := server.NewServer(estimationService)
 
 	server.InitRoutes()

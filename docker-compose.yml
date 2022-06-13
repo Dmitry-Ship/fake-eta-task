@@ -16,6 +16,22 @@ services:
       - .:/app
     depends_on:
       - redis
+      - go-swagger-predict
+      - go-swagger-cars
+
+  go-swagger-predict:
+    image: quay.io/goswagger/swagger
+    volumes:
+      - ./:/app
+    working_dir: /app
+    entrypoint: ["swagger", "generate", "client", "-f", "/app/swagger/predict.yml", "-t", "/app/internal/generated/prediction", "-A", "predict"]
+
+  go-swagger-cars:
+    image: quay.io/goswagger/swagger
+    volumes:
+      - ./:/app
+    working_dir: /app
+    entrypoint: ["swagger", "generate", "client", "-f", "/app/swagger/car.yml", "-t", "/app/internal/generated/cars", "-A", "cars"]
 
   redis:
     image: redis:6.2.6-alpine

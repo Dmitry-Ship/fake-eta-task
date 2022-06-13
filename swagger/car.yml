@@ -1,0 +1,92 @@
+swagger: "2.0"
+
+info:
+  title: "Cars service"
+  version: "1.0"
+
+basePath: /fake-eta
+
+produces:
+- application/json
+
+consumes:
+- application/json
+
+paths:
+  /cars:
+    get:
+      operationId: getCars
+      description: |
+        Returns the nearest cars
+      parameters:
+      - name: lat
+        in: query
+        type: number
+        format: float64
+        required: true
+        minimum: -90.0
+        maximum: 90.0
+        description: Latitude
+      - name: lng
+        in: query
+        type: number
+        format: float64
+        required: true
+        minimum: -180
+        maximum: 180
+        description: Longitude
+      - name: limit
+        in: query
+        type: number
+        format: int
+        required: true
+        minimum: 1
+        maximum: 100
+        description: |
+          Number of cars requested
+
+      responses:
+        200:
+          description: Car list
+          schema: 
+            type: array
+            items:
+              $ref: '#/definitions/car'
+
+  /_health:
+    get:
+      operationId: health
+
+      responses:
+        200:
+          description: Always OK
+
+definitions:
+  car:
+    type: object
+    x-nullable: false
+    required:
+      - id
+      - lat
+      - lng
+    properties:
+      id:
+        type: number
+        format: int
+        minimum: 1
+        description: Car id
+        x-nullable: false
+      lat:
+        type: number
+        format: float64
+        minimum: -90.0
+        maximum: 90.0
+        description: Car current latitude
+        x-nullable: false
+      lng:
+        type: number
+        format: float64
+        minimum: -180
+        maximum: 180
+        description: Car current longitude
+        x-nullable: false

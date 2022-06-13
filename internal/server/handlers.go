@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fake-eta-task/internal/adapters"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -13,7 +12,6 @@ func (s *server) handleGetEstimation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get the target coordinates from the request
 	lat := r.URL.Query().Get("lat")
 	if lat == "" {
 		http.Error(w, "Target coordinates are required", http.StatusBadRequest)
@@ -26,7 +24,6 @@ func (s *server) handleGetEstimation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// convert the coordinates to float64
 	latFloat, err := strconv.ParseFloat(lat, 64)
 	if err != nil {
 		http.Error(w, "Invalid target coordinates", http.StatusBadRequest)
@@ -39,10 +36,7 @@ func (s *server) handleGetEstimation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	estimation, err := s.estimationService.Estimate(adapters.Coordinates{
-		Lat: latFloat,
-		Lng: lngFloat,
-	})
+	estimation, err := s.estimationService.Estimate(latFloat, lngFloat)
 
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error: %s", err.Error()), http.StatusInternalServerError)

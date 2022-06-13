@@ -10,6 +10,10 @@
 go-bin
 cache
 .env
+*.DS_Store
+*/generated/cars/**
+*/generated/prediction/**
+
 # Test binary, built with `go test -c`
 *.test
 

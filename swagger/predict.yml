@@ -1,0 +1,77 @@
+swagger: "2.0"
+
+info:
+  title: "Predict service"
+  version: "1.0"
+
+basePath: /fake-eta
+
+produces:
+- application/json
+
+consumes:
+- application/json
+
+paths:
+  /predict:
+    post:
+      operationId: predict
+      description: |
+        Расчёт времени в пути для всех исходных позиций в целевую позицию.
+        Результат возвращается в минутаx. Порядок значений в ответе соответствует
+        порядку исходных позиций.
+      parameters:
+      - name: positionList
+        in: body
+        schema:
+          type: object
+          required:
+          - target
+          - source
+          properties:
+            target:
+              $ref: '#/definitions/position'
+            source:
+              type: array
+              items:
+                $ref: '#/definitions/position'
+
+      responses:
+        200:
+          description: Car list
+          schema: 
+            type: array
+            items:
+              type: number
+              format: int
+
+  /_health:
+    get:
+      operationId: health
+
+      responses:
+        200:
+          description: Always OK
+
+definitions:
+  position:
+    type: object
+    x-nullable: false
+    required:
+    - lat
+    - lng
+    properties:
+      lat:
+        type: number
+        format: float64
+        minimum: -90.0
+        maximum: 90.0
+        description: Latitude
+        x-nullable: false
+      lng:
+        type: number
+        format: float64
+        minimum: -180
+        maximum: 180
+        description: Longitude
+        x-nullable: false
