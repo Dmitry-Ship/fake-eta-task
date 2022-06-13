@@ -41,7 +41,7 @@ func (s estimationService) Estimate(lat, lng float64) (int64, error) {
 		return minimalTime, nil
 	}
 
-	carsResponse, err := common.Retry(3, 1, func() (*carsClient.GetCarsOK, error) {
+	carsResponse, err := common.Retry(2, 1, func() (*carsClient.GetCarsOK, error) {
 		params := carsClient.NewGetCarsParams()
 		params.SetLat(lat)
 		params.SetLng(lng)
@@ -70,7 +70,7 @@ func (s estimationService) Estimate(lat, lng float64) (int64, error) {
 		})
 	}
 
-	predictionResponse, err := common.Retry(3, 1, func() (*predictionClient.PredictOK, error) {
+	predictionResponse, err := common.Retry(2, 1, func() (*predictionClient.PredictOK, error) {
 		params := predictionClient.NewPredictParams()
 		predictBody := predictionClient.PredictBody{
 			Source: sources,
